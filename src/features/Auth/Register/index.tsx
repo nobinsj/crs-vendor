@@ -1,260 +1,255 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-
-type Step = 1 | 2
+import { Link, useNavigate } from "react-router"
+import { userRegistration } from "@/firebase/AuthUserService"
 
 const Register = () => {
-  const [step, setStep] = useState<Step>(1)
-  const [otpSent, setOtpSent] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [timer, setTimer] = useState(0)
-  const [error, setError] = useState("")
-
+  const navigate = useNavigate()
+  const [errors, setErrors] = useState<Record<string, string>>({})
   const [form, setForm] = useState({
+    name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    otp: "",
-    name: "",
     businessName: "",
     phone: "",
+    addressState: "",
+    addressDistrict: "",
+    addressPlace: "",
   })
+  const [loading, setLoading] = useState(false)
+  const registrationFields = [
+    {
+      name: "name",
+      label: "Full Name",
+      type: "text",
+      placeholder: "Enter your full name",
+      required: true,
+      minLength: 3,
+    },
+    {
+      name: "email",
+      label: "Email ID",
+      type: "email",
+      placeholder: "Enter your email",
+      required: true,
+    },
+    {
+      name: "password",
+      label: "Password",
+      type: "password",
+      placeholder: "Enter password",
+      required: true,
+      minLength: 6,
+    },
+    {
+      name: "confirmPassword",
+      label: "Re-type Password",
+      type: "password",
+      placeholder: "Confirm password",
+      required: true,
+      match: "password",
+    },
+    {
+      name: "businessName",
+      label: "Business Name",
+      type: "text",
+      placeholder: "Enter business name",
+      required: true,
+      minLength: 2,
+    },
+    {
+      name: "phone",
+      label: "Mobile No",
+      type: "tel",
+      placeholder: "Enter 10-digit mobile number",
+      required: true,
+    },
+    {
+      name: "addressState",
+      label: "State",
+      type: "text",
+      placeholder: "Enter state",
+      required: true,
+    },
+    {
+      name: "addressDistrict",
+      label: "District",
+      type: "text",
+      placeholder: "Enter district",
+      required: true,
+    },
+    {
+      name: "addressPlace",
+      label: "Place",
+      type: "text",
+      placeholder: "Enter place",
+      required: true,
+    },
+  ]
 
-  // Timer for resend OTP
-  useEffect(() => {
-    if (timer <= 0) return
-    const interval = setInterval(() => {
-      setTimer((prev) => prev - 1)
-    }, 1000)
-    return () => clearInterval(interval)
-  }, [timer])
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  const phoneRegex = /^[6-9]\d{9}$/
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.id]: e.target.value })
-    setError("")
-  }
+    const { id, value } = e.target
 
-  const validateStep1 = () => {
-    if (!form.email) return "Email is required"
-    if (!form.password) return "Password is required"
-    if (form.password.length < 6) return "Password must be at least 6 chars"
-    if (form.password !== form.confirmPassword) return "Passwords do not match"
-    return ""
-  }
+    let updatedValue = value
 
-  const sendOtp = async () => {
-    const err = validateStep1()
-    if (err) return setError(err)
-
-    try {
-      setLoading(true)
-
-      // 🔗 API call
-      console.log("Sending OTP to", form.email)
-
-      setOtpSent(true)
-      setTimer(30)
-    } catch (err) {
-      setError("Failed to send OTP")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const verifyOtp = async () => {
-    if (!form.otp) return setError("Enter OTP")
-
-    try {
-      setLoading(true)
-
-      // 🔗 API call
-      console.log("Verifying OTP", form.otp)
-
-      setStep(2)
-    } catch (err) {
-      setError("Invalid OTP")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleRegister = async () => {
-    if (!form.name || !form.businessName) {
-      return setError("Fill all required fields")
+    if (id === "phone") {
+      updatedValue = value.replace(/\D/g, "")
     }
 
+    setForm({ ...form, [id]: updatedValue })
+
+    if (id === "email") {
+      if (updatedValue && !emailRegex.test(updatedValue)) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "Enter a valid email address",
+        }))
+        return
+      }
+    }
+
+    if (id === "phone") {
+      if (updatedValue && !phoneRegex.test(updatedValue)) {
+        setErrors((prev) => ({
+          ...prev,
+          phone: "Enter valid 10-digit mobile number",
+        }))
+        return
+      }
+    }
+
+    if (id === "confirmPassword") {
+      if (updatedValue !== form.password) {
+        setErrors((prev) => ({
+          ...prev,
+          confirmPassword: "Passwords do not match",
+        }))
+        return
+      }
+    }
+
+    setErrors((prev) => ({ ...prev, [id]: "" }))
+  }
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {}
+
+    registrationFields.forEach((field: any) => {
+      const value = (form as any)[field.name]
+
+      if (field.required && !value) {
+        newErrors[field.name] = `${field.label} is required`
+        return
+      }
+
+      if (field.minLength && value.length < field.minLength) {
+        newErrors[field.name] =
+          `${field.label} must be at least ${field.minLength} characters`
+        return
+      }
+
+      if (field.name === "email" && !emailRegex.test(value)) {
+        newErrors.email = "Enter a valid email address"
+        return
+      }
+
+      if (field.name === "phone" && !phoneRegex.test(value)) {
+        newErrors.phone = "Enter valid 10-digit mobile number"
+        return
+      }
+
+      if (field.match && value !== (form as any)[field.match]) {
+        newErrors[field.name] = "Passwords do not match"
+      }
+    })
+
+    return newErrors
+  }
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    const validationErrors = validateForm()
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors)
+      return
+    }
     try {
       setLoading(true)
-
-      // 🔗 API call
-      console.log("Register Vendor", form)
-
-      alert("Registered successfully")
-    } catch (err) {
-      setError("Registration failed")
-    } finally {
-      setLoading(false)
+      await userRegistration(
+        form,
+        () => setLoading(false),
+        () => navigate("/verify-email")
+      )
+    } catch (error) {
+      console.log(error)
     }
   }
 
   return (
-    <div className="flex h-screen w-screen items-center justify-center bg-gray-50 dark:bg-gray-900">
-      <Card className="w-full max-w-sm shadow-lg dark:shadow-black/50">
+    <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 p-2 dark:bg-black">
+      <Card className="w-full max-w-4xl shadow-lg dark:bg-gray-900">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">
-            {step === 1 ? "Create Account" : "Business Details"}
-          </CardTitle>
+          <CardTitle className="text-2xl font-bold">Create Account</CardTitle>
         </CardHeader>
 
         <CardContent>
-          {/* ERROR */}
-          {error && (
-            <p className="mb-3 text-center text-sm text-red-500">{error}</p>
-          )}
+          <form
+            onSubmit={handleRegister}
+            className="grid grid-cols-1 gap-x-12 gap-y-4 p-4 sm:grid-cols-2"
+          >
+            {registrationFields.map((field) => (
+              <div key={field.name} className="flex flex-col gap-1">
+                <Label htmlFor={field.name}>{field.label}</Label>
 
-          {/* STEP 1 */}
-          {step === 1 && (
-            <div className="flex flex-col space-y-4">
-              <div>
-                <Label htmlFor="email" className="mb-2">
-                  Email
-                </Label>
                 <Input
-                  id="email"
-                  placeholder="Enter email"
-                  value={form.email}
+                  id={field.name}
+                  type={field.type}
+                  placeholder={field.placeholder}
+                  value={(form as any)[field.name]}
                   onChange={handleChange}
-                  disabled={otpSent}
+                  inputMode={field.name === "phone" ? "numeric" : undefined}
+                  className={`w-full pr-10 ${
+                    errors[field.name]
+                      ? "border-red-500 focus:border-red-500"
+                      : ""
+                  }`}
                 />
-              </div>
 
-              <div>
-                <Label htmlFor="password" className="mb-2">
-                  Password
-                </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="Enter password"
-                  value={form.password}
-                  onChange={handleChange}
-                />
+                {errors[field.name] && (
+                  <p className="text-xs text-red-500">{errors[field.name]}</p>
+                )}
               </div>
+            ))}
 
-              <div>
-                <Label htmlFor="confirmPassword" className="mb-2">
-                  Confirm Password
-                </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="Confirm password"
-                  value={form.confirmPassword}
-                  onChange={handleChange}
-                />
-              </div>
+            {/* Bottom Section */}
+            <div className="col-span-1 mt-4 flex flex-col gap-3 sm:col-span-2 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-gray-500">
+                Already have an account?{" "}
+                <Link to="/" className="text-blue-500 hover:underline">
+                  Login
+                </Link>
+              </p>
 
-              {!otpSent ? (
-                <Button onClick={sendOtp} disabled={loading}>
-                  {loading ? "Sending..." : "Send OTP"}
+              <div className="flex gap-3">
+                <Button type="button" variant="outline" className="w-[120px]">
+                  Cancel
                 </Button>
-              ) : (
-                <>
-                  <div>
-                    <Label htmlFor="otp" className="mb-2">
-                      OTP
-                    </Label>
-                    <Input
-                      id="otp"
-                      placeholder="Enter OTP"
-                      value={form.otp}
-                      onChange={handleChange}
-                    />
-                  </div>
 
-                  <Button onClick={verifyOtp} disabled={loading}>
-                    {loading ? "Verifying..." : "Verify OTP"}
-                  </Button>
-
-                  <div className="flex justify-between text-sm">
-                    <button
-                      disabled={timer > 0}
-                      onClick={sendOtp}
-                      className="text-blue-500 disabled:opacity-50"
-                    >
-                      {timer > 0 ? `Resend in ${timer}s` : "Resend OTP"}
-                    </button>
-
-                    <button
-                      onClick={() => {
-                        setOtpSent(false)
-                        setTimer(0)
-                      }}
-                      className="text-gray-500"
-                    >
-                      Change Email
-                    </button>
-                  </div>
-                </>
-              )}
+                <Button type="submit" className="w-[120px]" loading={loading}>
+                  Register
+                </Button>
+              </div>
             </div>
-          )}
-
-          {/* STEP 2 */}
-          {step === 2 && (
-            <div className="flex flex-col space-y-4">
-              <div>
-                <Label htmlFor="name" className="mb-2">
-                  Full Name
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="Your name"
-                  value={form.name}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="businessName" className="mb-2">
-                  Business Name
-                </Label>
-                <Input
-                  id="businessName"
-                  placeholder="Company name"
-                  value={form.businessName}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="phone" className="mb-2">
-                  Phone
-                </Label>
-                <Input
-                  id="phone"
-                  placeholder="Phone number"
-                  value={form.phone}
-                  onChange={handleChange}
-                />
-              </div>
-
-              <Button onClick={handleRegister} disabled={loading}>
-                {loading ? "Registering..." : "Register"}
-              </Button>
-            </div>
-          )}
-
-          {/* LOGIN LINK */}
-          <p className="mt-4 text-center text-sm text-gray-500">
-            Already have an account?{" "}
-            <a href="/" className="text-blue-500 hover:underline">
-              Login
-            </a>
-          </p>
+          </form>
         </CardContent>
       </Card>
     </div>
