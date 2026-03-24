@@ -6,6 +6,16 @@ import Register from "@/features/Auth/Register"
 import VerifyEmailRoute from "./VerifyEmailRoute"
 import VerifyEmail from "@/features/Auth/VerifyEmail"
 import ActivateAccount from "@/features/Auth/AcivateAccount"
+import Layout from "@/container/Layout"
+import { lazy, Suspense } from "react"
+import Loader from "@/components/Loader"
+
+const Dashboard = lazy(() => import("@/features/Dashboard"))
+const Bookings = lazy(() => import("@/features/Bookings"))
+const Cars = lazy(() => import("@/features/Cars"))
+const Earnings = lazy(() => import("@/features/Earnings"))
+const Profile = lazy(() => import("@/features/Profile"))
+const Settings = lazy(() => import("@/features/Settings"))
 
 export const router = createBrowserRouter([
   {
@@ -41,11 +51,68 @@ export const router = createBrowserRouter([
     ),
   },
   {
-    path: "/",
-    element: (
-      <ProtectedRoute>
-        <div>Main</div>
-      </ProtectedRoute>
-    ),
+    element: <Layout />,
+    children: [
+      {
+        path: "/",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<Loader />}>
+              <Dashboard />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/bookings",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<Loader />}>
+              <Bookings />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/cars",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<Loader />}>
+              <Cars />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/earnings",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<Loader />}>
+              <Earnings />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/profile",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<Loader />}>
+              <Profile />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "/settings",
+        element: (
+          <ProtectedRoute>
+            <Suspense fallback={<Loader />}>
+              <Settings />
+            </Suspense>
+          </ProtectedRoute>
+        ),
+      },
+    ],
   },
 ])
