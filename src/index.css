@@ -149,3 +149,33 @@ input:-webkit-autofill,
 input:-webkit-autofill:focus {
   transition: background-color 9999s ease-in-out 0s;
 }
+
+@layer utilities {
+  /* Webkit browsers (Chrome, Safari, Edge) */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-2 border-transparent bg-gray-300 bg-clip-content dark:bg-gray-700;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400 dark:bg-gray-600;
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #d1d5db transparent; /* light mode thumb */
+  }
+
+  .dark * {
+    scrollbar-color: #374151 transparent; /* dark mode thumb */
+  }
+}

@@ -1,17 +1,30 @@
+import type { VendorUser } from "@/container/type"
 import { firebaseAuthApi } from "@/firebase/firebaseAuthApi"
 import { useQuery } from "@tanstack/react-query"
 
 export const useFirebaseAuth = () => {
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ["me"],
+  const { data: authUser, isLoading: isAuthLoading } = useQuery({
+    queryKey: ["auth-user"],
     queryFn: firebaseAuthApi.getCurrentUser,
-    retry: false,
     refetchOnWindowFocus: false,
   })
 
+  const {
+    data: vendorData,
+    isLoading: isVendorLoading,
+    isError,
+  } = useQuery({
+    queryKey: ["vendor-profile", authUser?.uid],
+    queryFn: () => firebaseAuthApi.getVendorProfile(authUser?.uid),
+    enabled: !!authUser?.uid,
+    retry: false,
+  })
+
   return {
-    user: data,
-    isLoading,
-    isAuthenticated: !!data && !isError,
+    user: (vendorData
+      ? { ...authUser, ...vendorData }
+      : authUser) as VendorUser,
+    isLoading: isAuthLoading || isVendorLoading,
+    isAuthenticated: !!authUser && !isError,
   }
 }
