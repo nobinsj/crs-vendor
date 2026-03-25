@@ -1,7 +1,7 @@
 import { RouterProvider } from "react-router"
 import { router } from "./Router/route"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
-import { Bounce, Slide, ToastContainer } from "react-toastify"
+import { Slide, ToastContainer } from "react-toastify"
 
 const queryClient = new QueryClient({
   defaultOptions: {

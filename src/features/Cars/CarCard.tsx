@@ -29,7 +29,7 @@ export const CarCard = ({ car }: { car: CarT }) => {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
-              {car.category}
+              {car.brand}
             </p>
             <h3 className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
               {car.name}
@@ -40,7 +40,7 @@ export const CarCard = ({ car }: { car: CarT }) => {
           </button>
         </div>
 
-        <div className="mt-4 flex items-center gap-4 border-y border-gray-50 py-3 dark:border-gray-800">
+        <div className="mt-1 flex items-center gap-4 border-y border-gray-50 py-3 dark:border-gray-800">
           <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
             <Fuel size={14} className="text-gray-400" />
             {car.fuelType}
@@ -51,7 +51,7 @@ export const CarCard = ({ car }: { car: CarT }) => {
           </div>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-1 flex items-center justify-between">
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-extrabold text-gray-900 dark:text-white">
               ₹{car.pricePerDay}
