@@ -1,8 +1,8 @@
-import { useFirebaseAuth } from "@/services/auth"
+import { useAuth } from "@/hooks/useAuth"
 import { Navigate } from "react-router"
 
 const LoginRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isAuthenticated, isLoading } = useFirebaseAuth()
+  const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
     return <div>Checking auth...</div>

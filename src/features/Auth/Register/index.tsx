@@ -240,10 +240,6 @@ const Register = () => {
               </p>
 
               <div className="flex gap-3">
-                <Button type="button" variant="outline" className="w-[120px]">
-                  Cancel
-                </Button>
-
                 <Button type="submit" className="w-[120px]" loading={loading}>
                   Register
                 </Button>

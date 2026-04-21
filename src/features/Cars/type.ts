@@ -12,3 +12,13 @@ export type CarT = {
   vendorId: string
   createdAt?: any
 }
+
+export type CarFormData = {
+  name: string
+  brand: string
+  pricePerDay: string
+  fuelType: string
+  transmission: string
+  status: "available" | "maintenance"
+  image: string
+}

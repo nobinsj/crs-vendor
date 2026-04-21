@@ -7,11 +7,11 @@ import {
   ChevronRight,
 } from "lucide-react"
 import { Link } from "react-router"
-import { useFirebaseAuth } from "@/services/auth"
 import { StatCard } from "./StatCard"
 import StatusBadge from "./StatusBadge"
 import { CarCard } from "./CarCard"
 import EmptyState from "./EmptyState"
+import { useAuth } from "@/hooks/useAuth"
 
 // ---------- DUMMY DATA ----------
 const stats = [
@@ -105,7 +105,8 @@ const cars = [
 ]
 
 const Dashboard = () => {
-  const { user } = useFirebaseAuth()
+  const { user } = useAuth()
+  
 
   return (
     <div className="mx-auto max-w-7xl space-y-10 p-4 transition-colors duration-300 md:p-8">

@@ -11,17 +11,35 @@ import {
 } from "@/components/ui/select"
 import { Button } from "@/components/ui/button"
 import { CreateCar } from "./CreateCar"
-import { useCars } from "@/hooks/useCars"
 import { Input } from "@/components/ui/input"
+import { UpdateCar } from "./UpdateCar"
+import { ViewCar } from "./ViewCar"
 
 const Cars = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("All")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false)
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false)
+  const [selectedCar, setSelectedCar] = useState<any>(null)
 
-  // 🔥 Fetch from Firebase (vendor-specific already)
-  const { data: cars = [], isLoading, isError } = useCars()
+  const handleCloseModal = () => {
+    setIsUpdateModalOpen(false)
+    setIsViewModalOpen(false)
+    setSelectedCar(null)
+  }
 
+  const handleEditClick = (car: any) => {
+    setSelectedCar(car)
+    setIsUpdateModalOpen(true)
+  }
+  const handleViewCar = (car: any) => {
+    setSelectedCar(car)
+    setIsViewModalOpen(true)
+  }
+  const cars: any = []
+  let isLoading = false
+  let isError = true
   // 🔍 Filter logic
   const filteredCars = cars.filter((car: any) => {
     const matchesSearch = car.name
@@ -111,7 +129,12 @@ const Cars = () => {
       ) : filteredCars.length > 0 ? (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredCars.map((car: any) => (
-            <CarCard key={car.id} car={car} />
+            <CarCard
+              key={car.id}
+              car={car}
+              onEdit={() => handleEditClick(car)}
+              onView={() => handleViewCar(car)}
+            />
           ))}
         </div>
       ) : (
@@ -132,6 +155,16 @@ const Cars = () => {
 
       {/* MODAL */}
       <CreateCar open={isModalOpen} onOpenChange={setIsModalOpen} />
+      <UpdateCar
+        open={isUpdateModalOpen}
+        handleCloseModal={handleCloseModal}
+        car={selectedCar}
+      />
+      <ViewCar
+        open={isViewModalOpen}
+        handleCloseModal={handleCloseModal}
+        car={selectedCar}
+      />
     </div>
   )
 }
