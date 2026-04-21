@@ -2,11 +2,11 @@ import type { CarStatus } from "./type"
 
 export const StatusBadge = ({ status }: { status: CarStatus }) => {
   const styles: Record<CarStatus, string> = {
-    Available:
+    available:
       "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    Booked:
+    booked:
       "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
-    Maintenance:
+    maintenance:
       "bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-400",
   }
   return (

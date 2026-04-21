@@ -1,33 +1,29 @@
-// components/ProtectedRoute.tsx
-import { useFirebaseAuth } from "@/services/auth"
-import type { ReactNode } from "react"
-import { Navigate } from "react-router"
+import { Navigate, useLocation } from "react-router"
+import { Zap } from "lucide-react"
+import { useAuth } from "@/hooks/useAuth"
 
 interface ProtectedRouteProps {
-  children: ReactNode
-  requireEmailVerified?: boolean
+  children: React.ReactNode
 }
 
-const ProtectedRoute = ({
-  children,
-  requireEmailVerified = true,
-}: ProtectedRouteProps) => {
-  const { user, isLoading, isAuthenticated } = useFirebaseAuth()
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+  const location = useLocation()
+
+  const { isAuthenticated, isLoading } = useAuth()
 
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-gray-600">
-        Checking authentication...
+      <div className="flex min-h-screen items-center justify-center bg-[#161311]">
+        <Zap className="animate-pulse text-[#06F2A2]" />
+        <span className="ml-2 text-[10px] font-black text-zinc-500 uppercase">
+          Syncing Session...
+        </span>
       </div>
     )
   }
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />
-  }
-
-  if (requireEmailVerified && user && !user.emailVerified) {
-    return <Navigate to="/verify-email" replace />
+    return <Navigate to="/login" state={{ from: location }} replace />
   }
 
   return <>{children}</>

@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { userLogin } from "@/firebase/loginUserService"
+import { toast } from "react-toastify"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import axiosInstance from "@/lib/axios"
 
 const Login = () => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const [form, setForm] = useState({
     email: "",
@@ -18,8 +21,6 @@ const Login = () => {
     email: "",
     password: "",
   })
-
-  const [loading, setLoading] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.id]: e.target.value })
@@ -36,24 +37,23 @@ const Login = () => {
     return Object.values(newErrors).every((e) => !e)
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const loginMutation = useMutation({
+    mutationFn: (data: any) => axiosInstance.post("/v1/auth/vendor-login", data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] })
+      navigate("/")
+    },
+    onError: (err: any) => {
+      toast.error(err?.response?.data?.message || "Login failed")
+    },
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!validate()) return
 
-    try {
-      setLoading(true)
-
-      await userLogin(
-        form.email,
-        form.password,
-        () => setLoading(false),
-        () => navigate("/"),
-        () => navigate("/verify-email")
-      )
-    } catch (err) {
-      console.log(err)
-    }
+    loginMutation.mutate({ emailId: form.email, password: form.password })
   }
 
   return (
@@ -99,8 +99,12 @@ const Login = () => {
               )}
             </div>
 
-            <Button type="submit" className="mt-2 w-full" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
+            <Button
+              type="submit"
+              className="mt-2 w-full"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? "Logging in..." : "Login"}
             </Button>
 
             <p className="text-center text-sm text-gray-500 dark:text-gray-400">

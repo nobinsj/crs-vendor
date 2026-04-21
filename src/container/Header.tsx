@@ -1,8 +1,8 @@
-import { useFirebaseAuth } from "@/services/auth"
+import { useAuth } from "@/hooks/useAuth"
 import { BadgeCheck } from "lucide-react"
 
 const Header = () => {
-  const { user, isLoading } = useFirebaseAuth()
+  const { isLoading, user } = useAuth()
 
   return (
     <header className="flex h-16 items-center justify-between border-b border-gray-200 bg-white px-8 transition-colors dark:border-gray-800 dark:bg-gray-900">
@@ -29,9 +29,9 @@ const Header = () => {
             <div className="hidden text-right sm:block">
               <div className="flex items-center justify-end gap-1">
                 <p className="text-sm font-bold text-gray-800 dark:text-gray-100">
-                  {user?.displayName || "New Vendor"}
+                  {user?.fullName || "New Vendor"}
                 </p>
-                {user?.emailVerified !== false && (
+                {user?.isVerified !== false && (
                   <BadgeCheck
                     size={16}
                     className="fill-blue-500/10 text-green-500"
