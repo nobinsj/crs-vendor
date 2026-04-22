@@ -11,6 +11,10 @@ import { CarForm } from "./CarForm"
 import * as React from "react"
 import type { CarFormData } from "./type"
 import { Car } from "lucide-react"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import axiosInstance from "@/lib/axios"
+import { API_ENDPOINTS } from "@/services/endpoints"
+import { useAuth } from "@/hooks/useAuth"
 
 const initialState: CarFormData = {
   name: "",
@@ -23,10 +27,24 @@ const initialState: CarFormData = {
 }
 
 export const CreateCar = ({ open, onOpenChange }: any) => {
+  const { user } = useAuth()
+  const queryClient = useQueryClient()
 
   const [formData, setFormData] = React.useState(initialState)
   const [imgError, setImgError] = React.useState(false)
-  const [loading, setLoading] = React.useState(false)
+
+  const addCarMutation = useMutation({
+    mutationFn: (data: any) => axiosInstance.post(API_ENDPOINTS.ADD_CAR, data),
+    onSuccess: (res) => {
+      toast.success(res?.data?.message || "Success")
+      onOpenChange(false)
+      setFormData(initialState)
+      queryClient.invalidateQueries({ queryKey: ["vendorCars"] })
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Register Error")
+    },
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -36,22 +54,17 @@ export const CreateCar = ({ open, onOpenChange }: any) => {
       return
     }
 
-    try {
-      setLoading(true)
-
-      // await mutateAsync({
-      //   ...formData,
-      //   pricePerDay: Number(formData.pricePerDay),
-      // })
-
-      toast.success("Car added 🚗")
-      onOpenChange(false)
-      setFormData(initialState)
-    } catch (e: any) {
-      toast.error(e.message)
-    } finally {
-      setLoading(false)
+    const carData = {
+      carName: formData.name,
+      manufacturer: formData.brand,
+      ratePerHour: formData.pricePerDay,
+      fuelType: formData.fuelType,
+      transmissionType: formData.transmission,
+      carImage: formData.image,
+      vendorId: user.id,
+      vendorName: user.fullName,
     }
+    addCarMutation.mutate(carData)
   }
 
   return (
@@ -71,16 +84,16 @@ export const CreateCar = ({ open, onOpenChange }: any) => {
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
-              disabled={loading}
+              disabled={addCarMutation.isPending}
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              disabled={!formData.image || imgError || loading}
+              disabled={!formData.image || imgError || addCarMutation.isPending}
               className="min-w-[140px] bg-blue-600 shadow-md shadow-blue-600/20 hover:bg-blue-700"
             >
-              {loading ? "Processing..." : "List Vehicle"}
+              {addCarMutation.isPending ? "Processing..." : "List Vehicle"}
             </Button>
           </DialogFooter>
         </form>

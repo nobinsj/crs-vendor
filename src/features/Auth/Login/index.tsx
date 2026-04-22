@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { toast } from "react-toastify"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import axiosInstance from "@/lib/axios"
+import { API_ENDPOINTS } from "@/services/endpoints"
 
 const Login = () => {
   const navigate = useNavigate()
@@ -38,13 +39,16 @@ const Login = () => {
   }
 
   const loginMutation = useMutation({
-    mutationFn: (data: any) => axiosInstance.post("/v1/auth/vendor-login", data),
+    mutationFn: (data: any) =>
+      axiosInstance.post(API_ENDPOINTS.VENDOR_LOGIN, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["me"] })
+      const expiry = Date.now() + 300 * 1000
+      localStorage.setItem("otpExpiry", expiry.toString())
       navigate("/")
     },
     onError: (err: any) => {
-      toast.error(err?.response?.data?.message || "Login failed")
+      toast.error(err?.message || "Login failed")
     },
   })
 

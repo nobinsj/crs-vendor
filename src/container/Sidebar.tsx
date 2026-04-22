@@ -1,4 +1,7 @@
 import { auth } from "@/firebase/firebase"
+import axiosInstance from "@/lib/axios"
+import { API_ENDPOINTS } from "@/services/endpoints"
+import { useQueryClient } from "@tanstack/react-query"
 import { signOut } from "firebase/auth"
 import {
   LayoutDashboard,
@@ -14,6 +17,9 @@ import { toast } from "react-toastify"
 
 const Sidebar = () => {
   const navigate = useNavigate()
+    const queryClient = useQueryClient()
+
+  
   const menuItems = [
     { name: "Dashboard", path: "/", icon: <LayoutDashboard size={20} /> },
     { name: "Bookings", path: "/bookings", icon: <CalendarCheck size={20} /> },
@@ -29,13 +35,9 @@ const Sidebar = () => {
     "flex items-center gap-3 px-4 py-3 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-gray-200 rounded-lg transition-colors"
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      toast.success("Logged out successfully")
-      navigate("/login")
-    } catch (error) {
-      toast.error(error.message)
-    }
+    await axiosInstance.post(API_ENDPOINTS.LOGOUT)
+
+    queryClient.setQueryData(["me"], null)
   }
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
