@@ -6,15 +6,15 @@ interface CarCardProps {
   car: CarT
   onEdit: () => void
   onView: () => void
-  // onDelete?: (id: string) => void // Optional: if you want delete too
+  onDelete: (id: string) => void // Optional: if you want delete too
 }
-export const CarCard = ({ car, onEdit, onView }: CarCardProps) => {
+export const CarCard = ({ car, onEdit, onView, onDelete }: CarCardProps) => {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-all hover:shadow-xl dark:border-gray-800 dark:bg-gray-900">
       <div className="relative aspect-video overflow-hidden">
         <img
-          src={car.image}
-          alt={car.name}
+          src={car.carImage}
+          alt={car.carName}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute top-3 right-3">
@@ -28,7 +28,10 @@ export const CarCard = ({ car, onEdit, onView }: CarCardProps) => {
           >
             <Edit3 size={18} />
           </button>
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-red-600 shadow-lg transition-colors hover:bg-red-600 hover:text-white">
+          <button
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-white text-red-600 shadow-lg transition-colors hover:bg-red-600 hover:text-white"
+            onClick={() => onDelete(car?.id)}
+          >
             <Trash2 size={18} />
           </button>
         </div>
@@ -38,10 +41,10 @@ export const CarCard = ({ car, onEdit, onView }: CarCardProps) => {
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs font-bold tracking-widest text-blue-600 uppercase dark:text-blue-400">
-              {car.brand}
+              {car.manufacturer}
             </p>
             <h3 className="mt-1 text-lg font-bold text-gray-900 dark:text-white">
-              {car.name}
+              {car.carName}
             </h3>
           </div>
           <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
@@ -56,14 +59,14 @@ export const CarCard = ({ car, onEdit, onView }: CarCardProps) => {
           </div>
           <div className="flex items-center gap-1.5 text-xs font-medium text-gray-500 dark:text-gray-400">
             <Settings2 size={14} className="text-gray-400" />
-            {car.transmission}
+            {car.transmissionType}
           </div>
         </div>
 
         <div className="mt-1 flex items-center justify-between">
           <div className="flex items-baseline gap-1">
             <span className="text-xl font-extrabold text-gray-900 dark:text-white">
-              ₹{car.pricePerDay}
+              ₹{car.ratePerHour}
             </span>
             <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
               /day

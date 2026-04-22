@@ -3,27 +3,32 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
-import { Link, useNavigate } from "react-router"
+import { data, Link, useNavigate } from "react-router"
 import { userRegistration } from "@/firebase/AuthUserService"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
+import axiosInstance from "@/lib/axios"
+import { API_ENDPOINTS } from "@/services/endpoints"
+import { toast } from "react-toastify"
 
 const Register = () => {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
+
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [form, setForm] = useState({
-    name: "",
-    email: "",
+    fullName: "",
+    emailId: "",
     password: "",
     confirmPassword: "",
     businessName: "",
-    phone: "",
-    addressState: "",
-    addressDistrict: "",
-    addressPlace: "",
+    mobileNumber: "",
+    state: "",
+    district: "",
+    place: "",
   })
-  const [loading, setLoading] = useState(false)
   const registrationFields = [
     {
-      name: "name",
+      name: "fullName",
       label: "Full Name",
       type: "text",
       placeholder: "Enter your full name",
@@ -31,7 +36,7 @@ const Register = () => {
       minLength: 3,
     },
     {
-      name: "email",
+      name: "emailId",
       label: "Email ID",
       type: "email",
       placeholder: "Enter your email",
@@ -62,28 +67,28 @@ const Register = () => {
       minLength: 2,
     },
     {
-      name: "phone",
+      name: "mobileNumber",
       label: "Mobile No",
       type: "tel",
       placeholder: "Enter 10-digit mobile number",
       required: true,
     },
     {
-      name: "addressState",
+      name: "state",
       label: "State",
       type: "text",
       placeholder: "Enter state",
       required: true,
     },
     {
-      name: "addressDistrict",
+      name: "district",
       label: "District",
       type: "text",
       placeholder: "Enter district",
       required: true,
     },
     {
-      name: "addressPlace",
+      name: "place",
       label: "Place",
       type: "text",
       placeholder: "Enter place",
@@ -173,6 +178,19 @@ const Register = () => {
     return newErrors
   }
 
+  const registerMutation = useMutation({
+    mutationFn: () => axiosInstance.post(API_ENDPOINTS.VENDOR_REGISTER, form),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["me"] })
+      const expiry = Date.now() + 300 * 1000
+      localStorage.setItem("otpExpiry", expiry.toString())
+      navigate("/")
+    },
+    onError: (err: any) => {
+      toast.error(err?.message || "Register Error")
+    },
+  })
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -182,16 +200,7 @@ const Register = () => {
       setErrors(validationErrors)
       return
     }
-    try {
-      setLoading(true)
-      await userRegistration(
-        form,
-        () => setLoading(false),
-        () => navigate("/verify-email")
-      )
-    } catch (error) {
-      console.log(error)
-    }
+    registerMutation.mutate()
   }
 
   return (
@@ -240,7 +249,11 @@ const Register = () => {
               </p>
 
               <div className="flex gap-3">
-                <Button type="submit" className="w-[120px]" loading={loading}>
+                <Button
+                  type="submit"
+                  className="w-[120px]"
+                  loading={registerMutation.isPending}
+                >
                   Register
                 </Button>
               </div>
