@@ -1,11 +1,11 @@
-import { useMe } from "./useMe";
+import { useMe } from "@/hooks/useMe"
 
 export const useAuth = () => {
-  const { data, isLoading, isError } = useMe();
+  const { data: user, isLoading, isError } = useMe()
 
   return {
-    user: data,
+    user: user ?? null,
+    isAuthenticated: !!user && !isError,
     isLoading,
-    isAuthenticated: !!data && !isError,
-  };
-};
+  }
+}
