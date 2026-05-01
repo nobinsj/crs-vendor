@@ -1,6 +1,6 @@
+import { useAuth } from "@/hooks/useAuth"
 import { Navigate, useLocation } from "react-router"
 import { Zap } from "lucide-react"
-import { useAuth } from "@/hooks/useAuth"
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -8,7 +8,6 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const location = useLocation()
-
   const { isAuthenticated, isLoading, user } = useAuth()
 
   if (isLoading) {
@@ -27,7 +26,7 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   }
 
   if (!user?.isVerified) {
-    return <Navigate to={"/verify-email"} state={{ from: location }} />
+    return <Navigate to="/verify-email" state={{ from: location }} replace />
   }
 
   return <>{children}</>

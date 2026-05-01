@@ -12,7 +12,7 @@ const LoginRoute = ({ children }: { children: React.ReactNode }) => {
     return <Navigate to="/" replace />
   }
 
-  return children
+  return <>{children}</>
 }
 
 export default LoginRoute

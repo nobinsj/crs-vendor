@@ -7,8 +7,14 @@ interface VerifyEmailRouteProps {
 }
 
 const VerifyEmailRoute = ({ children }: VerifyEmailRouteProps) => {
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
 
+  // Wait for auth check before deciding
+  if (isLoading) {
+    return null
+  }
+
+  // Not logged in or already verified → go home
   if (!user || user.isVerified) {
     return <Navigate to="/" replace />
   }
